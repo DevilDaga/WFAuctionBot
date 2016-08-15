@@ -285,6 +285,27 @@ namespace WFAuctionBot
 			return auctions;
 		}
 
+		public Auction getAuction(int auction_id)
+		{
+			Auction auction = new Auction();
+
+			var reader = select("auctions", "*", "id=" + auction_id);
+			if (reader.Read())
+			{
+				auction.id = auction_id;
+				auction.initial_price = reader.GetInt32("initial_price");
+				auction.last_offer = reader.GetInt32("last_offer");
+				auction.status = reader.GetString("status");
+				auction.total_bids = reader.GetInt32("total_bids");
+				auction.start = reader.GetDateTime("start");
+				auction.end = reader.GetDateTime("end");
+				auction.sold = reader.GetBoolean("sold");
+				auction.warface_item = null;
+			}
+
+			return auction;
+		}
+
 		public string getSellerEmail(AuctionItem item)
 		{
 			var cmd = getCmd("SELECT accounts.email FROM selling INNER JOIN auctions ON selling.auction_id = auctions.id INNER JOIN accounts ON selling.account_id = accounts.id WHERE auctions.id = " + item.rsp.payload[0].auction.id);

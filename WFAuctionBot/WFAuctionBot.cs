@@ -175,7 +175,7 @@ namespace WFAuctionBot
 		private InventoryItem m_InventoryItems;
 		private int m_Kredits;
 		private AuctionItem m_SellingItems;
-		private Dictionary<string, int> m_SellRules = new Dictionary<string, int>();
+		private Dictionary<string, int> m_SellRules;
 		private Dictionary<string, string> m_Weapons;
 		private MyDB myDB;
 		private bool m_Sold, m_NoSell;
@@ -187,6 +187,7 @@ namespace WFAuctionBot
 
 			var ini = new IniFile();
 			var keys = ini.ReadKeys("SellRules");
+			m_SellRules = new Dictionary<string, int>();
 			foreach (var key in keys)
 				m_SellRules[key] = Convert.ToInt32(ini.Read(key, "SellRules"));
 
@@ -339,7 +340,7 @@ namespace WFAuctionBot
 		public void updateAuctions()
 		{
 			var auctions = myDB.getAuctions().Where(x => x.Item2 == "active");
-			int i = 1;
+			int i = 1, items_bid_new = 0;
 			foreach (var auction in auctions)
 			{
 				int id = auction.Item1;
@@ -347,10 +348,13 @@ namespace WFAuctionBot
 				string res = GET(req);
 				var updatedAuction = new JavaScriptSerializer().Deserialize<AuctionItem>(res);
 				string email = myDB.getSellerEmail(updatedAuction);
+				var oldAuction = myDB.getAuction(updatedAuction.rsp.payload[0].auction.id);
 				myDB.addSellingItems(updatedAuction, email);
 				Log(string.Format("Updated {0}/{1} auctions.", i++, auctions.Count()));
+				if (oldAuction.total_bids < updatedAuction.rsp.payload[0].auction.total_bids)
+					++items_bid_new;
 			}
-			Log("Finished updating auctions.");
+			Log(string.Format("Finished updating auctions. {0} new items recieved a bid.", items_bid_new));
 		}
 
 		public string CalculateMD5Hash(string input)
