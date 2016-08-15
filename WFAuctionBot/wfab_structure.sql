@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50626
 File Encoding         : 65001
 
-Date: 2016-08-15 17:49:52
+Date: 2016-08-15 19:41:26
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -41,7 +41,7 @@ CREATE TABLE `auctions` (
   `initial_price` int(11) NOT NULL,
   `last_offer` int(11) NOT NULL,
   `total_bids` int(11) unsigned zerofill DEFAULT NULL,
-  `sold` binary(1) DEFAULT NULL,
+  `sold` bit(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_item_auction` (`item_id`),
   CONSTRAINT `fk_item_auction` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
@@ -163,3 +163,9 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- ----------------------------
 DROP VIEW IF EXISTS `selling accounts`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `selling accounts` accounts` AS select `accounts`.`username` AS `Username`,`accounts`.`kredits` AS `Kredits`,count(`auctions`.`item_id`) AS `Total Auctioned`,count(`auctions`.`sold`) AS `Total Sold`,count(`auctions`.`total_bids`) AS `Total Bids`,sum(`auctions`.`last_offer`) AS `Total Earned` from ((`selling` join `accounts` on((`selling`.`account_id` = `accounts`.`id`))) join `auctions` on((`selling`.`auction_id` = `auctions`.`id`))) where (`auctions`.`sold` <> 0) group by `accounts`.`username`,`accounts`.`kredits` order by `Total Sold` desc ;
+
+-- ----------------------------
+-- View structure for sold weapons
+-- ----------------------------
+DROP VIEW IF EXISTS `sold weapons`;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `sold weapons` weapons` AS select `weapons`.`name` AS `Weapon`,count(`auctions`.`id`) AS `Total Auctioned`,sum(`auctions`.`sold`) AS `Total Sold`,sum(`auctions`.`last_offer`) AS `Total earned`,(sum(`auctions`.`last_offer`) / sum(`auctions`.`sold`)) AS `Average Value` from ((`items` join `auctions` on((`auctions`.`item_id` = `items`.`id`))) join `weapons` on((`items`.`code_id` = `weapons`.`id`))) group by `weapons`.`name` order by `Total Sold` desc ;
