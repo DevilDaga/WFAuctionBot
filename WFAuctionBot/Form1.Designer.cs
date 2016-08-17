@@ -32,7 +32,8 @@
 			this.btSell = new System.Windows.Forms.Button();
 			this.ConsoleFeed = new System.Windows.Forms.TextBox();
 			this.btUpdate = new System.Windows.Forms.Button();
-			this.btUpdateAuctions = new System.Windows.Forms.Button();
+			this.btUpdateMyAuctions = new System.Windows.Forms.Button();
+			this.btUpdateAllAuctions = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btSell
@@ -42,10 +43,10 @@
 			this.btSell.FlatAppearance.BorderSize = 0;
 			this.btSell.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btSell.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.btSell.Location = new System.Drawing.Point(903, 13);
+			this.btSell.Location = new System.Drawing.Point(914, 13);
 			this.btSell.Margin = new System.Windows.Forms.Padding(4);
 			this.btSell.Name = "btSell";
-			this.btSell.Size = new System.Drawing.Size(191, 114);
+			this.btSell.Size = new System.Drawing.Size(180, 120);
 			this.btSell.TabIndex = 1;
 			this.btSell.Text = "Sell";
 			this.btSell.UseVisualStyleBackColor = false;
@@ -60,13 +61,13 @@
 			this.ConsoleFeed.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.ConsoleFeed.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.ConsoleFeed.ForeColor = System.Drawing.SystemColors.Window;
-			this.ConsoleFeed.Location = new System.Drawing.Point(3, 164);
+			this.ConsoleFeed.Location = new System.Drawing.Point(3, 173);
 			this.ConsoleFeed.Margin = new System.Windows.Forms.Padding(0, 4, 0, 2);
 			this.ConsoleFeed.Multiline = true;
 			this.ConsoleFeed.Name = "ConsoleFeed";
 			this.ConsoleFeed.ReadOnly = true;
 			this.ConsoleFeed.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.ConsoleFeed.Size = new System.Drawing.Size(1106, 435);
+			this.ConsoleFeed.Size = new System.Drawing.Size(1106, 426);
 			this.ConsoleFeed.TabIndex = 2;
 			// 
 			// btUpdate
@@ -78,27 +79,41 @@
 			this.btUpdate.Location = new System.Drawing.Point(13, 13);
 			this.btUpdate.Margin = new System.Windows.Forms.Padding(4);
 			this.btUpdate.Name = "btUpdate";
-			this.btUpdate.Size = new System.Drawing.Size(191, 114);
+			this.btUpdate.Size = new System.Drawing.Size(180, 120);
 			this.btUpdate.TabIndex = 3;
 			this.btUpdate.Text = "Update Info";
 			this.btUpdate.UseVisualStyleBackColor = false;
 			this.btUpdate.Click += new System.EventHandler(this.btUpdate_Click);
 			// 
-			// btUpdateAuctions
+			// btUpdateMyAuctions
 			// 
-			this.btUpdateAuctions.Anchor = System.Windows.Forms.AnchorStyles.Top;
-			this.btUpdateAuctions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(177)))), ((int)(((byte)(177)))), ((int)(((byte)(177)))));
-			this.btUpdateAuctions.FlatAppearance.BorderSize = 0;
-			this.btUpdateAuctions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.btUpdateAuctions.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.btUpdateAuctions.Location = new System.Drawing.Point(456, 13);
-			this.btUpdateAuctions.Margin = new System.Windows.Forms.Padding(4);
-			this.btUpdateAuctions.Name = "btUpdateAuctions";
-			this.btUpdateAuctions.Size = new System.Drawing.Size(191, 114);
-			this.btUpdateAuctions.TabIndex = 4;
-			this.btUpdateAuctions.Text = "Update Auctions";
-			this.btUpdateAuctions.UseVisualStyleBackColor = false;
-			this.btUpdateAuctions.Click += new System.EventHandler(this.btUpdateAuctions_Click);
+			this.btUpdateMyAuctions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(177)))), ((int)(((byte)(177)))), ((int)(((byte)(177)))));
+			this.btUpdateMyAuctions.FlatAppearance.BorderSize = 0;
+			this.btUpdateMyAuctions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btUpdateMyAuctions.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.btUpdateMyAuctions.Location = new System.Drawing.Point(201, 13);
+			this.btUpdateMyAuctions.Margin = new System.Windows.Forms.Padding(4);
+			this.btUpdateMyAuctions.Name = "btUpdateMyAuctions";
+			this.btUpdateMyAuctions.Size = new System.Drawing.Size(180, 120);
+			this.btUpdateMyAuctions.TabIndex = 4;
+			this.btUpdateMyAuctions.Text = "Update My Auctions";
+			this.btUpdateMyAuctions.UseVisualStyleBackColor = false;
+			this.btUpdateMyAuctions.Click += new System.EventHandler(this.btUpdateMyAuctions_Click);
+			// 
+			// btUpdateAllAuctions
+			// 
+			this.btUpdateAllAuctions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(177)))), ((int)(((byte)(177)))), ((int)(((byte)(177)))));
+			this.btUpdateAllAuctions.FlatAppearance.BorderSize = 0;
+			this.btUpdateAllAuctions.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btUpdateAllAuctions.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.btUpdateAllAuctions.Location = new System.Drawing.Point(389, 13);
+			this.btUpdateAllAuctions.Margin = new System.Windows.Forms.Padding(4);
+			this.btUpdateAllAuctions.Name = "btUpdateAllAuctions";
+			this.btUpdateAllAuctions.Size = new System.Drawing.Size(180, 120);
+			this.btUpdateAllAuctions.TabIndex = 5;
+			this.btUpdateAllAuctions.Text = "Update All Auctions";
+			this.btUpdateAllAuctions.UseVisualStyleBackColor = false;
+			this.btUpdateAllAuctions.Click += new System.EventHandler(this.btUpdateAllAuctions_Click);
 			// 
 			// formWFAB
 			// 
@@ -106,7 +121,8 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(35)))), ((int)(((byte)(35)))));
 			this.ClientSize = new System.Drawing.Size(1107, 610);
-			this.Controls.Add(this.btUpdateAuctions);
+			this.Controls.Add(this.btUpdateAllAuctions);
+			this.Controls.Add(this.btUpdateMyAuctions);
 			this.Controls.Add(this.btUpdate);
 			this.Controls.Add(this.ConsoleFeed);
 			this.Controls.Add(this.btSell);
@@ -121,10 +137,11 @@
         }
 
         #endregion
-        private System.Windows.Forms.TextBox ConsoleFeed;
 		private System.Windows.Forms.Button btSell;
 		private System.Windows.Forms.Button btUpdate;
-		private System.Windows.Forms.Button btUpdateAuctions;
+		private System.Windows.Forms.Button btUpdateMyAuctions;
+		private System.Windows.Forms.Button btUpdateAllAuctions;
+		public System.Windows.Forms.TextBox ConsoleFeed;
 	}
 }
 
