@@ -7,9 +7,15 @@ namespace WFAuctionBot
 {
 	public class MyDB
 	{
+
+		#region Connection Info
+
 		public string server, password, uid, database;
 		private MySqlConnection connection;
 		private string connection_string;
+
+		#endregion Connection Info
+
 		public MyDB ( string server, string password, string uid, string database )
 		{
 			this.server = server;
@@ -21,6 +27,9 @@ namespace WFAuctionBot
 
 			connection = new MySqlConnection ( connection_string );
 		}
+
+
+		#region MySQL DML
 
 		private MySqlCommand getCmd ( string cmd = "" )
 		{
@@ -48,7 +57,7 @@ namespace WFAuctionBot
 			return ret;
 		}
 
-		long insert ( string table, string cols_csv, params object[] values )
+		private long insert ( string table, string cols_csv, params object[] values )
 		{
 			string cmdText = "INSERT INTO " + table + "(" + cols_csv + ") VALUES(";
 			cols_csv = cols_csv.Replace ( " ", "" );
@@ -62,7 +71,7 @@ namespace WFAuctionBot
 			return cmd.LastInsertedId;
 		}
 
-		long update ( string table, string where_clause, string cols_csv, params object[] values )
+		private long update ( string table, string where_clause, string cols_csv, params object[] values )
 		{
 			string cmdText = "UPDATE " + table + " SET";
 			cols_csv = cols_csv.Replace ( " ", "" );
@@ -77,7 +86,7 @@ namespace WFAuctionBot
 			return cmd.LastInsertedId;
 		}
 
-		MySqlDataReader select ( string table, string cols = "*", string where = "", string order = "", int limit = 0 )
+		private MySqlDataReader select ( string table, string cols = "*", string where = "", string order = "", int limit = 0 )
 		{
 			string cmdText = string.Format ( "SELECT {0} from {1}", cols, table );
 			if ( where != "" )
@@ -91,15 +100,7 @@ namespace WFAuctionBot
 			return reader;
 		}
 
-		public long addAccount ( string email, string password, string username, int kredits = 0 )
-		{
-			var cmd = getCmd ( "SELECT COUNT(*) FROM accounts WHERE `email`='" + email + "'" );
-			long result = (long) cmd.ExecuteScalar ( );
-			if ( result == 0 )
-				return insert ( "accounts", "email,password,username,kredits", email, password, username, kredits );
-			else
-				return update ( "accounts", "email='" + email + "'", "username,password,kredits", username, password, kredits );
-		}
+		#endregion MySQL DML
 
 		public void removeInventoryItems ( string email )
 		{
@@ -109,6 +110,19 @@ namespace WFAuctionBot
 				int account_id = reader.GetInt32 ( 0 );
 				update ( "inventory", "account_id='" + account_id + "'", "durability", -1 );
 			}
+		}
+
+
+		#region Add Methods
+
+		public long addAccount ( string email, string password, string username, int kredits = 0 )
+		{
+			var cmd = getCmd ( "SELECT COUNT(*) FROM accounts WHERE `email`='" + email + "'" );
+			long result = (long) cmd.ExecuteScalar ( );
+			if ( result == 0 )
+				return insert ( "accounts", "email,password,username,kredits", email, password, username, kredits );
+			else
+				return update ( "accounts", "email='" + email + "'", "username,password,kredits", username, password, kredits );
 		}
 
 		public void addInventoryItems ( List<PayloadInventory> items, string email )
@@ -158,28 +172,6 @@ namespace WFAuctionBot
 			}
 		}
 
-		public Dictionary<string, string> getWeapons ( )
-		{
-			Dictionary<string, string> weapons = new Dictionary<string, string> ( );
-			var reader = select ( "weapons" );
-			while ( reader.Read ( ) )
-			{
-				string code = reader.GetString ( 1 );
-				string name = reader.GetString ( 2 );
-				weapons[code] = name;
-			}
-			return weapons;
-		}
-
-		int getStatusID ( string status )
-		{
-			var reader = select ( "auction_status", "id", "name='" + status + "'" );
-			if ( reader.Read ( ) )
-				return reader.GetInt32 ( "id" );
-			else
-				return 0;
-		}
-
 		public bool addAuctionAll ( AuctionItem item, int id )
 		{
 			bool insert_null = false;
@@ -206,26 +198,6 @@ namespace WFAuctionBot
 			else
 				addAuction ( item.rsp.payload[0], "auctions_all" );
 			return !insert_null;
-		}
-
-		public HashSet<int> getAuctionIDs ( string table = "auctions_all", string where = "" )
-		{
-			HashSet<int> auctions = new HashSet<int> ( );
-			var reader = select ( table, "id", where );
-			while ( reader.Read ( ) )
-				auctions.Add ( reader.GetInt32 ( 0 ) );
-			return auctions;
-		}
-
-		public List<int> getNullAuctions ( int limit )
-		{
-			List<int> auctions = new List<int> ( );
-
-			var reader = select ( "auctions_all", "id", "auctions_all.item_id IS NULL", "auctions_all.id DESC", limit );
-			while ( reader.Read ( ) )
-				auctions.Add ( reader.GetInt32 ( 0 ) );
-
-			return auctions;
 		}
 
 		public int addAuction ( PayloadAuction item, string table = "auctions" )
@@ -295,6 +267,15 @@ namespace WFAuctionBot
 				return (int) insert ( "offer_type", "name", name );
 		}
 
+		private int addWeapon ( string code, string name = "Unknown" )
+		{
+			var reader = select ( "weapons", "*", "`code`='" + code + "'" );
+			if ( reader.Read ( ) )
+				return reader.GetInt32 ( 0 );
+			else
+				return (int) insert ( "weapons", "code,name", code, name );
+		}
+
 		private int addSoldierClass ( string name )
 		{
 			var reader = select ( "soldier_class", "*", "`name`='" + name + "'" );
@@ -304,13 +285,51 @@ namespace WFAuctionBot
 				return (int) insert ( "soldier_class", "name", name );
 		}
 
-		private int addWeapon ( string code, string name = "Unknown" )
+		#endregion Add Methods
+
+
+		#region Get Methods
+
+		public Dictionary<string, string> getWeapons ( )
 		{
-			var reader = select ( "weapons", "*", "`code`='" + code + "'" );
+			Dictionary<string, string> weapons = new Dictionary<string, string> ( );
+			var reader = select ( "weapons" );
+			while ( reader.Read ( ) )
+			{
+				string code = reader.GetString ( 1 );
+				string name = reader.GetString ( 2 );
+				weapons[code] = name;
+			}
+			return weapons;
+		}
+
+		private int getStatusID ( string status )
+		{
+			var reader = select ( "auction_status", "id", "name='" + status + "'" );
 			if ( reader.Read ( ) )
-				return reader.GetInt32 ( 0 );
+				return reader.GetInt32 ( "id" );
 			else
-				return (int) insert ( "weapons", "code,name", code, name );
+				return 0;
+		}
+
+		public HashSet<int> getAuctionIDs ( string table = "auctions_all", string where = "" )
+		{
+			HashSet<int> auctions = new HashSet<int> ( );
+			var reader = select ( table, "id", where );
+			while ( reader.Read ( ) )
+				auctions.Add ( reader.GetInt32 ( 0 ) );
+			return auctions;
+		}
+
+		public List<int> getNullAuctions ( int limit )
+		{
+			List<int> auctions = new List<int> ( );
+
+			var reader = select ( "auctions_all", "id", "auctions_all.item_id IS NULL", "auctions_all.id DESC", limit );
+			while ( reader.Read ( ) )
+				auctions.Add ( reader.GetInt32 ( 0 ) );
+
+			return auctions;
 		}
 
 		public List<Tuple<int, string, string, string, int>> getAccounts ( )
@@ -391,5 +410,7 @@ namespace WFAuctionBot
 				return reader.GetString ( 0 );
 			return null;
 		}
+
+		#endregion Get Methods
 	}
 }

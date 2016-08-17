@@ -16,7 +16,7 @@ namespace WFAuctionBot
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new formWFAB());
+            Application.Run(new FormWFAB());
         }
     }
 }

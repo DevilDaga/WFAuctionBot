@@ -9,15 +9,15 @@ using System.Windows.Forms;
 
 namespace WFAuctionBot
 {
-	public partial class formWFAB : Form
+	public partial class FormWFAB : Form
 	{
-		WFAuctionBot wfab;
-		MyDB myDB;
+		private WFAuctionBot wfab;
+		private MyDB myDB;
 
-		static formWFAB instance;
-		public static formWFAB Instance { get { return instance; } }
+		private static FormWFAB instance;
+		public static FormWFAB Instance { get { return instance; } }
 
-		public formWFAB ( )
+		public FormWFAB ( )
 		{
 			InitializeComponent ( );
 			instance = this;
@@ -36,6 +36,7 @@ namespace WFAuctionBot
 		{
 			var appName = Process.GetCurrentProcess ( ).ProcessName + ".exe";
 		}
+
 		public struct Summary
 		{
 			public int totalKredits, totalSold, totalBid;
@@ -49,6 +50,48 @@ namespace WFAuctionBot
 			btUpdateMyAuctions.Enabled = enable;
 			btUpdateAllAuctions.Enabled = enable;
 		}
+
+
+		#region Progress Bar
+
+		public void setMaxProgress ( int value )
+		{
+			if ( this.InvokeRequired )
+			{
+				this.Invoke ( new Action<int> ( setMaxProgress ), new object[] { value } );
+				return;
+			}
+			pgbarCommon.Maximum = value;
+		}
+
+		public void setProgress ( int value )
+		{
+			if ( this.InvokeRequired )
+			{
+				this.Invoke ( new Action<int> ( setProgress ), new object[] { value } );
+				return;
+			}
+			pgbarCommon.Value = value;
+			TaskbarProgress.SetValue ( this.Handle, value, pgbarCommon.Maximum );
+		}
+
+		public void incProgress ( int value )
+		{
+			setProgress ( pgbarCommon.Value + value );
+		}
+
+		public void incProgressPercent ( double percent )
+		{
+			incProgress ( (int) ( pgbarCommon.Maximum * percent / 100 ) );
+		}
+
+		public void resetProgress ( )
+		{
+			setProgress ( 0 );
+			TaskbarProgress.SetState ( this.Handle, TaskbarProgress.TaskbarStates.Normal );
+		}
+
+		#endregion Progress Bar
 
 		private void buildSummary ( List<Info> accountsInfo )
 		{
@@ -73,8 +116,12 @@ namespace WFAuctionBot
 				w.Write ( json );
 		}
 
-		private async void StartStopBtn_Click ( object sender, EventArgs e )
+
+		#region Do Tasks
+
+		private async void doSell ( )
 		{
+			resetProgress ( );
 			enableButtons ( false );
 			Task task = Task.Run ( ( ) =>
 			{
@@ -87,14 +134,20 @@ namespace WFAuctionBot
 				var keys = ini.ReadKeys ( "Accounts" );
 				foreach ( var key in keys )
 					accounts[key] = ini.Read ( key, "Accounts" );
+				setMaxProgress ( accounts.Count * ( 2 + 1 + 2 + 2 + 3 ) );
 				foreach ( var account in accounts )
 				{
 					if ( !wfab.Login ( account.Key, account.Value ) )
 						continue;
+					incProgress ( 2 );
 					wfab.getKredits ( );
+					incProgress ( 1 );
 					wfab.getSellingItems ( );
+					incProgress ( 2 );
 					wfab.getInventoryItems ( );
+					incProgress ( 2 );
 					wfab.sellItems ( );
+					incProgress ( 3 );
 					accountsInfo.Add ( wfab.getInfo ( ) );
 					wfab.Logout ( );
 
@@ -110,10 +163,12 @@ namespace WFAuctionBot
 			);
 			await task;
 			enableButtons ( true );
+			resetProgress ( );
 		}
 
-		private async void btUpdate_Click ( object sender, EventArgs e )
+		private async void doUpdate ( )
 		{
+			resetProgress ( );
 			enableButtons ( false );
 			Task task = Task.Run ( ( ) =>
 			{
@@ -122,14 +177,19 @@ namespace WFAuctionBot
 				var accounts = myDB.getAccounts ( );
 				wfab = new WFAuctionBot ( myDB, true );
 				List<Info> accountsInfo = new List<Info> ( );
+				setMaxProgress ( accounts.Count * ( 2 + 1 + 2 + 3 ) );
 
 				foreach ( var account in accounts )
 				{
 					if ( !wfab.Login ( account.Item2, account.Item3 ) )
 						continue;
+					incProgress ( 2 );
 					wfab.getKredits ( );
+					incProgress ( 1 );
 					wfab.getSellingItems ( );
+					incProgress ( 2 );
 					wfab.getInventoryItems ( );
+					incProgress ( 3 );
 					accountsInfo.Add ( wfab.getInfo ( ) );
 					wfab.Logout ( );
 
@@ -145,10 +205,12 @@ namespace WFAuctionBot
 			);
 			await task;
 			enableButtons ( true );
+			resetProgress ( );
 		}
 
-		private async void btUpdateMyAuctions_Click ( object sender, EventArgs e )
+		private async void doUpdateMyAuctions ( )
 		{
+			resetProgress ( );
 			enableButtons ( false );
 			Task task = Task.Run ( ( ) =>
 			{
@@ -158,10 +220,12 @@ namespace WFAuctionBot
 			);
 			await task;
 			enableButtons ( true );
+			resetProgress ( );
 		}
 
-		private async void btUpdateAllAuctions_Click ( object sender, EventArgs e )
+		private async void doUpdateAllAuctions ( )
 		{
+			resetProgress ( );
 			enableButtons ( false );
 			Task task = Task.Run ( ( ) =>
 			{
@@ -171,7 +235,34 @@ namespace WFAuctionBot
 			);
 			await task;
 			enableButtons ( true );
+			resetProgress ( );
 		}
+
+		#endregion Do Tasks
+
+		#region Button Events
+
+		private void StartStopBtn_Click ( object sender, EventArgs e )
+		{
+			doSell ( );
+		}
+
+		private void btUpdate_Click ( object sender, EventArgs e )
+		{
+			doUpdate ( );
+		}
+
+		private void btUpdateMyAuctions_Click ( object sender, EventArgs e )
+		{
+			doUpdateMyAuctions ( );
+		}
+
+		private void btUpdateAllAuctions_Click ( object sender, EventArgs e )
+		{
+			doUpdateAllAuctions ( );
+		}
+
+		#endregion Button Events
 
 		private void _Log ( string text )
 		{

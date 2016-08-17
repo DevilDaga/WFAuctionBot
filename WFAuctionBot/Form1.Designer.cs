@@ -1,6 +1,6 @@
 ﻿namespace WFAuctionBot
 {
-    partial class formWFAB
+    partial class FormWFAB
     {
         /// <summary>
         /// Required designer variable.
@@ -28,12 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(formWFAB));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormWFAB));
 			this.btSell = new System.Windows.Forms.Button();
 			this.ConsoleFeed = new System.Windows.Forms.TextBox();
 			this.btUpdate = new System.Windows.Forms.Button();
 			this.btUpdateMyAuctions = new System.Windows.Forms.Button();
 			this.btUpdateAllAuctions = new System.Windows.Forms.Button();
+			this.pgbarCommon = new System.Windows.Forms.ProgressBar();
 			this.SuspendLayout();
 			// 
 			// btSell
@@ -115,12 +116,24 @@
 			this.btUpdateAllAuctions.UseVisualStyleBackColor = false;
 			this.btUpdateAllAuctions.Click += new System.EventHandler(this.btUpdateAllAuctions_Click);
 			// 
-			// formWFAB
+			// pgbarCommon
+			// 
+			this.pgbarCommon.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.pgbarCommon.Location = new System.Drawing.Point(13, 140);
+			this.pgbarCommon.MarqueeAnimationSpeed = 1000;
+			this.pgbarCommon.Name = "pgbarCommon";
+			this.pgbarCommon.Size = new System.Drawing.Size(1081, 23);
+			this.pgbarCommon.Step = 1;
+			this.pgbarCommon.TabIndex = 6;
+			// 
+			// FormWFAB
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(35)))), ((int)(((byte)(35)))), ((int)(((byte)(35)))));
 			this.ClientSize = new System.Drawing.Size(1107, 610);
+			this.Controls.Add(this.pgbarCommon);
 			this.Controls.Add(this.btUpdateAllAuctions);
 			this.Controls.Add(this.btUpdateMyAuctions);
 			this.Controls.Add(this.btUpdate);
@@ -128,7 +141,7 @@
 			this.Controls.Add(this.btSell);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Margin = new System.Windows.Forms.Padding(4);
-			this.Name = "formWFAB";
+			this.Name = "FormWFAB";
 			this.Text = "WF Auction Bot";
 			this.Load += new System.EventHandler(this.formWFAB_Load);
 			this.ResumeLayout(false);
@@ -142,6 +155,7 @@
 		private System.Windows.Forms.Button btUpdateMyAuctions;
 		private System.Windows.Forms.Button btUpdateAllAuctions;
 		public System.Windows.Forms.TextBox ConsoleFeed;
+		private System.Windows.Forms.ProgressBar pgbarCommon;
 	}
 }
 

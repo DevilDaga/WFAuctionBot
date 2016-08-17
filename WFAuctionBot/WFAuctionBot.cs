@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -13,12 +12,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Script.Serialization;
-using System.Windows.Forms;
 
 namespace WFAuctionBot
 {
 
-	#region JSONResponse
+	#region JSON Response
 
 
 	#region AuctionItem
@@ -27,6 +25,20 @@ namespace WFAuctionBot
 	{
 		public string code { get; set; }
 		public string msg { get; set; }
+	}
+
+	public class WarfaceItemAuction
+	{
+		public string category { get; set; }
+		public string code { get; set; }
+		public string offer_type { get; set; }
+		public string soldier_class { get; set; }
+		public string status { get; set; }
+	}
+
+	public class Playable
+	{
+		public int id { get; set; }
 	}
 
 	public class Auction
@@ -44,20 +56,10 @@ namespace WFAuctionBot
 		public WarfaceItemAuction warface_item { get; set; }
 	}
 
-	public class AuctionItem
-	{
-		public RspAuction rsp { get; set; }
-	}
-
 	public class PayloadAuction
 	{
 		public Auction auction { get; set; }
 		public Err err { get; set; }
-	}
-
-	public class Playable
-	{
-		public int id { get; set; }
 	}
 
 	public class RspAuction
@@ -66,22 +68,19 @@ namespace WFAuctionBot
 		public string stat { get; set; }
 	}
 
-	public class WarfaceItemAuction
+	public class AuctionItem
 	{
-		public string category { get; set; }
-		public string code { get; set; }
-		public string offer_type { get; set; }
-		public string soldier_class { get; set; }
-		public string status { get; set; }
+		public RspAuction rsp { get; set; }
 	}
-	#endregion
+
+	#endregion AuctionItem
 
 
 	#region InventoryItem
 
-	public class InventoryItem
+	public class WarfaceItemInventory : WarfaceItemAuction
 	{
-		public RspInventory rsp { get; set; }
+		public int durability { get; set; }
 	}
 
 	public class PayloadInventory
@@ -96,30 +95,14 @@ namespace WFAuctionBot
 		public string stat { get; set; }
 	}
 
-	public class WarfaceItemInventory : WarfaceItemAuction
+	public class InventoryItem
 	{
-		public int durability { get; set; }
+		public RspInventory rsp { get; set; }
 	}
-	#endregion
+
+	#endregion InventoryItem
 
 	#region Wallet
-
-
-	public class Commerce
-	{
-		public RspCommerce rsp { get; set; }
-	}
-
-	public class Credit
-	{
-		public int amount { get; set; }
-		public string currency { get; set; }
-	}
-
-	public class PayloadCommerce
-	{
-		public Wallet wallet { get; set; }
-	}
 
 	public class ReservedCreditBalance
 	{
@@ -127,10 +110,10 @@ namespace WFAuctionBot
 		public string currency { get; set; }
 	}
 
-	public class RspCommerce
+	public class Credit
 	{
-		public List<PayloadCommerce> payload { get; set; }
-		public string stat { get; set; }
+		public int amount { get; set; }
+		public string currency { get; set; }
 	}
 
 	public class Wallet
@@ -141,17 +124,27 @@ namespace WFAuctionBot
 		public List<ReservedCreditBalance> reserved_credit_balances { get; set; }
 		public int userid { get; set; }
 	}
-	#endregion
+
+	public class PayloadCommerce
+	{
+		public Wallet wallet { get; set; }
+	}
+
+	public class RspCommerce
+	{
+		public List<PayloadCommerce> payload { get; set; }
+		public string stat { get; set; }
+	}
+
+	public class Commerce
+	{
+		public RspCommerce rsp { get; set; }
+	}
+
+	#endregion Wallet
 
 
 	#region Auth
-
-	public class Auth
-	{
-		public AuthData data { get; set; }
-		public object exception { get; set; }
-		public int status { get; set; }
-	}
 
 	public class AuthData
 	{
@@ -162,10 +155,18 @@ namespace WFAuctionBot
 		public string sessionToken { get; set; }
 		public object steamid { get; set; }
 	}
-	#endregion
 
-	#endregion
-	
+	public class Auth
+	{
+		public AuthData data { get; set; }
+		public object exception { get; set; }
+		public int status { get; set; }
+	}
+
+	#endregion Auth
+
+	#endregion JSON Response
+
 	public struct Info
 	{
 		public Auth auth;
@@ -176,11 +177,13 @@ namespace WFAuctionBot
 		public AuctionItem sellingItems;
 	}
 
-	class WFAuctionBot
+	internal class WFAuctionBot
 	{
 		private MyDB myDB;
+		private FormWFAB formWFAB;
 
-		#region AccountInfo
+		#region Account Info
+
 		private string login, password, token, nickname;
 		private Auth m_Auth;
 		private Commerce m_Commerce;
@@ -190,7 +193,8 @@ namespace WFAuctionBot
 		private Dictionary<string, int> m_SellRules;
 		private Dictionary<string, string> m_Weapons;
 		private bool m_Sold, m_NoSell;
-		#endregion
+
+		#endregion Account Info
 
 		public WFAuctionBot ( MyDB myDB, bool noSell = false )
 		{
@@ -203,12 +207,13 @@ namespace WFAuctionBot
 				m_SellRules[key] = Convert.ToInt32 ( ini.Read ( key, "SellRules" ) );
 
 			this.myDB = myDB;
+			this.formWFAB = FormWFAB.Instance;
 			m_NoSell = noSell;
 			m_Weapons = myDB.getWeapons ( );
 		}
 
-		#region PublicMethods
-		
+		#region Public Methods
+
 		public bool Login ( string Login, string Password )
 		{
 			login = Login;
@@ -234,7 +239,7 @@ namespace WFAuctionBot
 			myDB.addAccount ( login, password, nickname );
 			return true;
 		}
-		
+
 		public void getKredits ( )
 		{
 			string req = string.Format ( "https://rest.api.gface.com/gface-rest/commerce/wallet/get/my.json?token={0}&gameid=101", token );
@@ -245,13 +250,13 @@ namespace WFAuctionBot
 
 			myDB.addAccount ( login, password, nickname, m_Kredits );
 		}
-		
+
 		public void Logout ( )
 		{
 			Log ( nickname + " logged out." );
 			Log ( new string ( '-', 114 ) );
 		}
-		
+
 		public void getSellingItems ( )
 		{
 			string req = string.Format ( "https://rest.api.gface.com/gface-rest/games/warface/auction/get.json?token={0}&playableid=102&usertype=seller", token );
@@ -273,7 +278,7 @@ namespace WFAuctionBot
 						);
 			}
 		}
-		
+
 		public void getInventoryItems ( )
 		{
 			string req = string.Format ( "https://rest.api.gface.com/gface-rest/games/warface/auction/inventory/my.json?token={0}&playableid=102", token );
@@ -296,7 +301,7 @@ namespace WFAuctionBot
 						);
 			}
 		}
-		
+
 		public void sellItems ( )
 		{
 			if ( m_NoSell )
@@ -354,15 +359,18 @@ namespace WFAuctionBot
 		{
 			var auctions = myDB.getAuctions ( ).Where ( x => x.Item2 == "active" || x.Item2 == "closing" );
 			int i = 1, items_bid_new = 0, items_bid_first = 0;
+			formWFAB.setMaxProgress ( auctions.Count ( ) * ( 2 + 1 ) );
 			foreach ( var auction in auctions )
 			{
 				int id = auction.Item1;
 				var req = string.Format ( "https://rest.api.gface.com/gface-rest/games/warface/auction/{0}.json?playableid=102", id );
 				var res = GET ( req );
+				formWFAB.incProgress ( 2 );
 				var updatedAuction = new JavaScriptSerializer ( ).Deserialize<AuctionItem> ( res );
 				string email = myDB.getSellerEmail ( updatedAuction );
 				var oldAuction = myDB.getAuction ( updatedAuction.rsp.payload[0].auction.id );
 				myDB.addSellingItems ( updatedAuction, email );
+				formWFAB.incProgress ( 1 );
 				Log ( "Updated {0}/{1} auctions.", i++, auctions.Count ( ) );
 				if ( oldAuction.total_bids < updatedAuction.rsp.payload[0].auction.total_bids )
 				{
@@ -390,11 +398,12 @@ namespace WFAuctionBot
 			myInfo.auth = m_Auth;
 			return myInfo;
 		}
-		
 
-#endregion
-		
+
+		#endregion Public Methods
+
 		#region JSON
+
 		private string GET ( string url )
 		{
 			var request = (HttpWebRequest) WebRequest.Create ( url );
@@ -445,11 +454,12 @@ namespace WFAuctionBot
 
 			return responseString;
 		}
-		#endregion
-		
-		#region FetchAuctionHistory
 
-		void addAuctionsToDB ( ConcurrentQueue<AuctionItem> q, ref bool finished )
+		#endregion JSON
+
+		#region Fetch Auction History
+
+		private void addAuctionsToDB ( ConcurrentQueue<AuctionItem> q, ref bool finished )
 		{
 			while ( !finished || !q.IsEmpty )
 			{
@@ -467,7 +477,7 @@ namespace WFAuctionBot
 			}
 		}
 
-		AuctionItem fetchAuctionByIDHelper ( string res, int id )
+		private AuctionItem fetchAuctionByIDHelper ( string res, int id )
 		{
 			var auction = new JavaScriptSerializer ( ).Deserialize<AuctionItem> ( res );
 			if ( auction.rsp.stat == "fail" )
@@ -485,7 +495,7 @@ namespace WFAuctionBot
 			return auction;
 		}
 
-		void fetchAuctionByID ( ConcurrentQueue<AuctionItem> q, int id )
+		private void fetchAuctionByID ( ConcurrentQueue<AuctionItem> q, int id )
 		{
 			string req = string.Format ( "https://rest.api.gface.com/gface-rest/games/warface/auction/{0}.json?playableid=102", id );
 			string res = GET ( req );
@@ -494,7 +504,7 @@ namespace WFAuctionBot
 				q.Enqueue ( auction );
 		}
 
-		void fetchAuctions ( int start, int end, List<int> redo )
+		private void fetchAuctions ( int start, int end, List<int> redo )
 		{
 			var auctions = myDB.getAuctionIDs ( );
 			ConcurrentQueue<AuctionItem> q = new ConcurrentQueue<AuctionItem> ( );
@@ -509,6 +519,7 @@ namespace WFAuctionBot
 					ids.Add ( id );
 			Log ( "Number of new auctions to fetch: {0}", ids.Count - redo.Count );
 			Log ( "Number of missing auctions to update: {0}", redo.Count );
+			formWFAB.setMaxProgress ( ids.Count );
 			const int pool_size = 4;
 			foreach ( int id in ids )
 			{
@@ -522,17 +533,21 @@ namespace WFAuctionBot
 					tasks.Add ( task );
 					Thread.Sleep ( 50 );
 				}
+				formWFAB.incProgress ( 1 );
 			}
 			Task.WaitAll ( tasks.ToArray ( ), 10000 );
 			finished = true;
 			Log ( "Finished fetching all auctions." );
 		}
 
-		void updateFromFiles ( int start, int end )
+		private void updateFromFiles ( int start, int end )
 		{
+			formWFAB.resetProgress ( );
+			formWFAB.setMaxProgress ( end - start );
 			var auctions = myDB.getAuctionIDs ( );
 			for ( int id = start; id != end; ++id )
 			{
+				formWFAB.incProgress ( 1 );
 				if ( auctions.Contains ( id ) )
 					continue;
 				string fname = id.ToString ( ) + ".json";
@@ -559,11 +574,12 @@ namespace WFAuctionBot
 				else
 					Log ( "Not found: {0}", fname );
 			}
+			formWFAB.resetProgress ( );
 		}
 
-		#endregion
+		#endregion Fetch Auction History
 
-		string CalculateMD5Hash ( string input )
+		private string CalculateMD5Hash ( string input )
 		{
 			// step 1, calculate MD5 hash from input
 			MD5 md5 = System.Security.Cryptography.MD5.Create ( );
@@ -578,9 +594,9 @@ namespace WFAuctionBot
 
 		}
 
-		void Log ( string text, params object[] args )
+		private void Log ( string text, params object[] args )
 		{
-			formWFAB.Instance.Log ( text, args );
+			formWFAB.Log ( text, args );
 		}
 	}
 }
